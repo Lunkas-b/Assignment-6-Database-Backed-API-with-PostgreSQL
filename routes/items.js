@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Pool } = require('pg');
 
+// Connection data for the local PostgreSQL database
 const db = new Pool({
     user: 'postgres',
     host: 'localhost',
@@ -10,6 +11,8 @@ const db = new Pool({
     port: 5432
 })
 
+// GET /api/items
+// Returns all rows of the users table
 router.get('/', async (req, res) => {
     try{
          const result = await db.query(`SELECT * FROM users ORDER BY id ASC;`);
@@ -20,6 +23,8 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/items/{id}
+// Returns the users row from the table with the matching id
 router.get('/:id', async (req, res) => {
     try{
          const result = await db.query(`SELECT * FROM users WHERE id = ${req.params.id};`);
@@ -30,6 +35,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// POST /api/items
+// Adds new row to the users table
 router.post('/', async (req, res) => {
     try{
         if(req.body && req.body.first_name && req.body.last_name){
@@ -45,11 +52,14 @@ router.post('/', async (req, res) => {
     }
 });
 
+// PUT /api/items/{id}
+// Changes the values of the fields provided in the request body for the users row with the specified id
 router.put('/:id', async (req, res) => {
     try{
         if(req.body && (req.body.first_name || req.body.last_name || req.body.age || req.body.address)){
             var updateFields = ``;
             for(const key of Object.keys(req.body)){
+                // Adds all the provided update fields and values to the SQL query string
                 if(key == 'first_name' || key == 'last_name' || key == 'age' || key == 'address'){
                     if(updateFields != ''){
                         updateFields += ', ';
@@ -58,6 +68,7 @@ router.put('/:id', async (req, res) => {
                 }
             }
             const result = await db.query(`UPDATE users SET ${updateFields} WHERE id = ${req.params.id}`);
+            // rowCount is the number of affected rows, if 0 then update was unsuccessful
             if(result.rowCount > 0){
                 res.status(200).json({status: 200, message: `succesfully updated ${result.rowCount} row(s)`});
             } else {
@@ -73,9 +84,12 @@ router.put('/:id', async (req, res) => {
     
 });
 
+// DELETE /api/items/{id}
+// Deletes the row with the given id from the users table
 router.delete('/:id', async (req, res) => {
     try{
         const result = await db.query(`DELETE FROM users WHERE id = ${req.params.id}`);
+        // rowCount is the number of affected rows, if 0 then update was unsuccessful
         if(result.rowCount > 0){
             res.status(200).json({status: 200, message: `Deletion of user with id: ${req.params.id} successfull`});
         } else {

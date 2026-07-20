@@ -7,6 +7,7 @@ app.set('view engine', 'ejs');
 app.use(express.json());
 app.use(logger);
 
+// Gets the router that contains all the fetch request handling for the DB
 const itemsRouter = require('./routes/items.js');
 app.use('/api/items', itemsRouter);
 
